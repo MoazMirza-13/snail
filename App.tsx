@@ -1,9 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
 import {useCallState} from './services/callState';
+import {callPermissions} from './services/askPermissions';
 
 const App = () => {
   const {playSound} = useCallState();
+
+  useEffect(() => {
+    callPermissions();
+  }, []);
 
   return (
     <View style={styles.body}>
