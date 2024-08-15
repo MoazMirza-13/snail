@@ -4,11 +4,13 @@ import {useCallState} from './services/callState';
 import {callPermissions} from './services/askPermissions';
 
 const App = () => {
-  const {playSound} = useCallState();
+  const {playSound, startListenerTapped} = useCallState();
 
   useEffect(() => {
     callPermissions();
-  }, []);
+    startListenerTapped();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // leave it EMPTY
 
   return (
     <View style={styles.body}>
