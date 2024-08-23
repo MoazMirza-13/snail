@@ -21,13 +21,13 @@ export const useCallState = () => {
       (event: string) => {
         console.log(event);
         if (event === 'Disconnected') {
-          playSound();
+          // playSound();
         } else if (event === 'Incoming') {
         } else if (event === 'Offhook') {
           console.log('Offhook call');
-          playSound();
+          // playSound();
         } else if (event === 'Missed') {
-          playSound();
+          // playSound();
         }
       },
       false, // no need to read phone numbers
