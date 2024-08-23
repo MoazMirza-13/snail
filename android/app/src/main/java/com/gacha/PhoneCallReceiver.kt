@@ -6,48 +6,53 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.telephony.TelephonyManager
 import android.util.Log
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 class PhoneCallReceiver : BroadcastReceiver() {
-    private var wasRinging = false
-    private var wasOffhook = false
 
     override fun onReceive(context: Context, intent: Intent) {
+        
         val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
+        Log.d("PhoneCallReceiver", "Phone State: $state")
         
         when (state) {
+            // ringing state
             TelephonyManager.EXTRA_STATE_RINGING -> {
-                wasRinging = true
-                wasOffhook = false
-                Log.d("PhoneCallReceiver", "Incoming call detected")
+                Log.d("PhoneCallReceiver", "in RINGING state")
+              /*  try {
+                Log.d("PhoneCallReceiver", "Trying to play sound")
+                    playSound(context)
+                } catch (e: Exception) {
+                    Log.e("PhoneCallReceiver", "Error playing sound", e)
+                } */
             }
-            
-            TelephonyManager.EXTRA_STATE_OFFHOOK -> {
-                if (wasRinging) {
-                    // Call was answered
+            // idle state
+             TelephonyManager.EXTRA_STATE_IDLE -> {
+                Log.d("PhoneCallReceiver", "in IDLE state")
+                try {
+                Log.d("PhoneCallReceiver", "Trying to play sound")
                     playSound(context)
-                    wasRinging = false
+                } catch (e: Exception) {
+                    Log.e("PhoneCallReceiver", "Error playing sound", e)
                 }
-                wasOffhook = true
-                Log.d("PhoneCallReceiver", "Call connected")
             }
-            
-            TelephonyManager.EXTRA_STATE_IDLE -> {
-                if (wasOffhook) {
-                    // Call ended or disconnected
+            // offhook state
+                TelephonyManager.EXTRA_STATE_OFFHOOK -> {
+                Log.d("PhoneCallReceiver", "in offhook state")
+                try {
+                Log.d("PhoneCallReceiver", "Trying to play sound")
                     playSound(context)
-                    wasOffhook = false
-                } else if (wasRinging) {
-                    // Call was rejected
-                    playSound(context)
-                    wasRinging = false
+                } catch (e: Exception) {
+                    Log.e("PhoneCallReceiver", "Error playing sound", e)
                 }
-                Log.d("PhoneCallReceiver", "Call ended or rejected")
             }
         }
     }
 
     private fun playSound(context: Context) {
-    Log.d("PhoneCallReceiver", "Attempting to play sound")
+    Log.d("PhoneCallReceiver", "in playsound()")
     try {
         val mediaPlayer = MediaPlayer.create(context, R.raw.gacha)
         mediaPlayer.start()
