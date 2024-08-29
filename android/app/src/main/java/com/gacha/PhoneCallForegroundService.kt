@@ -55,37 +55,55 @@ class PhoneCallForegroundService : Service() {
         startForeground(notificationId, notification)
     }
 
-    private fun playSound() {
+private fun playSound() {
+    try {
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        
+        // Attempt to route the audio to the loudspeaker
         try {
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-            // Set audio attributes for voice call
-            val audioAttributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
-
-            mediaPlayer = MediaPlayer()
-            mediaPlayer.setAudioAttributes(audioAttributes)
-
-            // Set the data source for the media player
-            val afd = resources.openRawResourceFd(R.raw.gacha)
-            mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-            afd.close()
-
-            // Start playback
-            mediaPlayer.prepare()
-            mediaPlayer.start()
-
-            mediaPlayer.setOnCompletionListener {
-                Log.d("PhoneCallForegroundService", "Sound playback completed")
-                it.release()
-            }
-            Log.d("PhoneCallForegroundService", "Sound playback started")
+            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION // Try to set the mode
+            audioManager.isSpeakerphoneOn = true // Try to route to loudspeaker
+            Log.d("PhoneCallForegroundService", "Speakerphone set to ON")
         } catch (e: Exception) {
-            Log.e("PhoneCallForegroundService", "Error during sound playback", e)
+            Log.e("PhoneCallForegroundService", "Error setting speakerphone on", e)
         }
+
+        mediaPlayer = MediaPlayer()
+        val afd = resources.openRawResourceFd(R.raw.gacha)
+        mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+        afd.close()
+
+        mediaPlayer.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+        )
+
+        mediaPlayer.prepare()
+        mediaPlayer.start()
+        mediaPlayer.setOnCompletionListener {
+            Log.d("PhoneCallForegroundService", "Sound playback completed")
+            it.release()
+
+      /*      // Optionally reset the speakerphone setting
+            try {
+                audioManager.isSpeakerphoneOn = false
+                audioManager.mode = AudioManager.MODE_NORMAL
+                Log.d("PhoneCallForegroundService", "Speakerphone set to OFF, mode set to NORMAL")
+            } catch (e: Exception) {
+                Log.e("PhoneCallForegroundService", "Error resetting speakerphone or mode", e)
+            } */
+        } 
+
+        Log.d("PhoneCallForegroundService", "Sound playback started")
+    } catch (e: Exception) {
+        Log.e("PhoneCallForegroundService", "Error during sound playback", e)
     }
+}
+
+
+
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
