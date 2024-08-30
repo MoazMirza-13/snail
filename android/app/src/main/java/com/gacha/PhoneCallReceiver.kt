@@ -13,7 +13,7 @@ class PhoneCallReceiver : BroadcastReceiver() {
         Log.d("PhoneCallReceiver", "Phone State: $state")
 
         when (state) {
-            TelephonyManager.EXTRA_STATE_RINGING, TelephonyManager.EXTRA_STATE_OFFHOOK -> {
+            TelephonyManager.EXTRA_STATE_OFFHOOK -> {
                 Log.d("PhoneCallReceiver", "Starting JobIntentService")
                 val serviceIntent = Intent(context, PhoneCallForegroundServiceStarter::class.java)
                 PhoneCallForegroundServiceStarter.enqueueWork(context, serviceIntent)
