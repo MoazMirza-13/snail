@@ -13,13 +13,17 @@ class PhoneCallReceiver : BroadcastReceiver() {
         Log.d("PhoneCallReceiver", "Phone State: $state")
 
         when (state) {
-            TelephonyManager.EXTRA_STATE_RINGING, TelephonyManager.EXTRA_STATE_OFFHOOK -> {
+            TelephonyManager.EXTRA_STATE_OFFHOOK -> {
                 Log.d("PhoneCallReceiver", "Starting JobIntentService")
-                val serviceIntent = Intent(context, PhoneCallForegroundServiceStarter::class.java)
-                PhoneCallForegroundServiceStarter.enqueueWork(context, serviceIntent)
+       //         val serviceIntent = Intent(context, PhoneCallForegroundServiceStarter::class.java)
+        //        PhoneCallForegroundServiceStarter.enqueueWork(context, serviceIntent)
+        val serviceIntent = Intent("com.gacha.ACTION_ENABLE_ACCESSIBILITY")
+        context.sendBroadcast(serviceIntent)
             }
             TelephonyManager.EXTRA_STATE_IDLE -> {
                 Log.d("PhoneCallReceiver", "in IDLE state")
+                val serviceIntent = Intent("com.gacha.ACTION_DISABLE_ACCESSIBILITY")
+                context.sendBroadcast(serviceIntent)
             }
         }
     }
