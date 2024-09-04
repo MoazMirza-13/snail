@@ -63,36 +63,8 @@ class PhoneCallReceiver : BroadcastReceiver() {
         mediaPlayer.start()
     }  */
 
-   
     private fun playOffhookSound(context: Context) {
-        try {
-            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            
-            val mediaPlayer = MediaPlayer()
-            val afd = context.resources.openRawResourceFd(R.raw.gacha)
-            mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-            afd.close()
-    
-            mediaPlayer.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-            )
-    
-            mediaPlayer.prepare()
-
-           Handler().postDelayed({
-            mediaPlayer.start()
-            mediaPlayer.setOnCompletionListener {
-                Log.d("PhoneCallReceiver", "Sound playback completed")
-                it.release()
-            }
-            Log.d("PhoneCallReceiver", "Sound playback started")
-        }, 500) 
-        
-        } catch (e: Exception) {
-            Log.e("PhoneCallReceiver", "Error during sound playback", e)
-        }
+        GachaUtil.playOffhookSound(context)
     }
+
 }
