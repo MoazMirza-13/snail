@@ -49,19 +49,23 @@ class PhoneCallReceiver : BroadcastReceiver() {
                 // Reset the isIncoming flag when the call ends
                 editor.putBoolean("isIncoming", false).apply()
 
+                Handler().postDelayed({
+                    playSound(context)
+                }, 200) 
+
                 val serviceIntent = Intent("com.gacha.ACTION_DISABLE_ACCESSIBILITY")
                  context.sendBroadcast(serviceIntent)
             }
         }
     }
 
-  /*  private fun playSound(context: Context) {
+  private fun playSound(context: Context) {
         val mediaPlayer = MediaPlayer.create(context, R.raw.gacha)
         mediaPlayer.setOnCompletionListener {
             mediaPlayer.release() 
         }
         mediaPlayer.start()
-    }  */
+    }  
 
     private fun playOffhookSound(context: Context) {
         GachaUtil.playOffhookSound(context)
