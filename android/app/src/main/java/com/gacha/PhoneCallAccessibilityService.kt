@@ -14,13 +14,16 @@ import android.os.Looper
 class PhoneCallAccessibilityService : AccessibilityService() {
 
     private var isServiceActive = false
+    private var isOutgoingActive = false
+    private var isSpeakerToggled = false 
 
     override fun onCreate() {
         super.onCreate()
-        // Register a BroadcastReceiver to listen for custom intents
+        //  BroadcastReceiver Register
         val filter = IntentFilter().apply {
             addAction("com.gacha.ACTION_ENABLE_ACCESSIBILITY")
             addAction("com.gacha.ACTION_DISABLE_ACCESSIBILITY")
+            addAction("com.gacha.ACTION_ENABLE_OUTGOING_ACCESSIBILITY")
         }
         registerReceiver(accessibilityReceiver, filter)
     }
@@ -38,58 +41,76 @@ class PhoneCallAccessibilityService : AccessibilityService() {
                 }
                 "com.gacha.ACTION_DISABLE_ACCESSIBILITY" -> {
                     isServiceActive = false
+                    isSpeakerToggled = false
+                }
+                "com.gacha.ACTION_ENABLE_OUTGOING_ACCESSIBILITY" -> {
+                    isOutgoingActive = true
                 }
             }
         }
     }
 
+    // currently if user open the incoming call scrren (UI) then there will be a delay in toggling on the speakerphone btn
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         Log.d("PhoneCallAccessibilityService", "in service")
-    
-        // Only process events if the service is active
-        if (!isServiceActive) return
-    
-        // Check if the event is from the dialer app and is a window state change
-        if (event.packageName == "com.google.android.dialer" && isServiceActive) {
+
+        if (!isServiceActive || isSpeakerToggled) return 
+
+        if (event.packageName == "com.google.android.dialer") {
             Log.d("PhoneCallAccessibilityService", "Window state changed in dialer app")
-    
-            // Get the root node of the current window
+
             val rootNode = rootInActiveWindow
             if (rootNode == null) {
                 Log.d("PhoneCallAccessibilityService", "Root node is null")
                 return
             }
-    
-            // Attempt to toggle the speakerphone
-            if (!toggleSpeakerphone(rootNode)) {
-                Log.d("PhoneCallAccessibilityService", "Speakerphone button not found, returning")
-                return
+
+            if (isOutgoingActive) {
+                Log.d("PhoneCallAccessibilityService", "in Outgoing block")
+
+                val callDurationNode = findNodeByContentDescription(rootNode, "0 seconds")
+                if (callDurationNode != null) {
+                    Log.d("PhoneCallAccessibilityService", "Outgoing call has been answered")
+                    // Add logic for when the outgoing call is answered
+                    playOffhookSound(this)
+
+                    isOutgoingActive = false
+                }
+            } else {
+                // Attempt to toggle the speakerphone
+                if (toggleSpeakerphone(rootNode)) {
+                    isSpeakerToggled = true // Set flag after toggling
+                }
             }
         } else {
             Log.d("PhoneCallAccessibilityService", "Not in dialer app or not a window state change event")
         }
     }
 
-    // Modified toggleSpeakerphone function to return true if the button is found and toggled
     private fun toggleSpeakerphone(rootNode: AccessibilityNodeInfo?): Boolean {
         if (rootNode == null) return false
-        
-        // Search for the speakerphone button by content description "Speaker"
+    
         val speakerButton = findNodeByContentDescription(rootNode, "Speaker")
     
-        // If the button is found and enabled, check if it's already toggled on
         return if (speakerButton != null && speakerButton.isEnabled) {
             // Check if the speakerphone is already on
             val isSpeakerOn = speakerButton.isSelected || (speakerButton.contentDescription?.toString() == "Speaker On")
     
             if (!isSpeakerOn) {
                 Log.d("PhoneCallAccessibilityService", "Speakerphone button found and currently off")
-    
-             
+                speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.d("PhoneCallAccessibilityService", "Speakerphone toggled")
+
+            // Toggle off the speakerphone
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (speakerButton.isEnabled) {
                     speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                    Log.d("PhoneCallAccessibilityService", "Speakerphone toggled")
-             
-    
+                    Log.d("PhoneCallAccessibilityService", "Speakerphone toggled off")
+                }
+               
+            }, 1700)
+                
                 true
             } else {
                 Log.d("PhoneCallAccessibilityService", "Speakerphone is already on")
@@ -100,8 +121,7 @@ class PhoneCallAccessibilityService : AccessibilityService() {
             false
         }
     }
-    
-    
+
     private fun findNodeByContentDescription(node: AccessibilityNodeInfo, contentDescription: String): AccessibilityNodeInfo? {
         // Check if node's content description matches the specified description
         if (node.contentDescription != null && node.contentDescription.toString() == contentDescription) {
@@ -114,6 +134,10 @@ class PhoneCallAccessibilityService : AccessibilityService() {
             if (result != null) return result
         }
         return null
+    }
+
+    private fun playOffhookSound(context: Context) {
+        GachaUtil.playOffhookSound(context)
     }
 
     override fun onInterrupt() {
