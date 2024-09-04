@@ -4,8 +4,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.media.MediaPlayer
 import android.telephony.TelephonyManager
 import android.util.Log
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.os.Handler
+
 
 class PhoneCallReceiver : BroadcastReceiver() {
 
@@ -28,6 +33,8 @@ class PhoneCallReceiver : BroadcastReceiver() {
                 Log.d("PhoneCallReceiver", "in offhook block")
                 if (sharedPreferences.getBoolean("isIncoming", false)) {
                     Log.d("PhoneCallReceiver", "in offhook block. this is an incoming call")
+                    
+                    playOffhookSound(context)
                 } else {
                     Log.d("PhoneCallReceiver", "in offhook block. this is an outgoing call in dialing pahse")
                     val enableOutgoingAccessibilityIntent = Intent("com.gacha.ACTION_ENABLE_OUTGOING_ACCESSIBILITY")
@@ -45,6 +52,47 @@ class PhoneCallReceiver : BroadcastReceiver() {
                 val serviceIntent = Intent("com.gacha.ACTION_DISABLE_ACCESSIBILITY")
                  context.sendBroadcast(serviceIntent)
             }
+        }
+    }
+
+  /*  private fun playSound(context: Context) {
+        val mediaPlayer = MediaPlayer.create(context, R.raw.gacha)
+        mediaPlayer.setOnCompletionListener {
+            mediaPlayer.release() 
+        }
+        mediaPlayer.start()
+    }  */
+
+   
+    private fun playOffhookSound(context: Context) {
+        try {
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            
+            val mediaPlayer = MediaPlayer()
+            val afd = context.resources.openRawResourceFd(R.raw.gacha)
+            mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            afd.close()
+    
+            mediaPlayer.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+            )
+    
+            mediaPlayer.prepare()
+
+           Handler().postDelayed({
+            mediaPlayer.start()
+            mediaPlayer.setOnCompletionListener {
+                Log.d("PhoneCallReceiver", "Sound playback completed")
+                it.release()
+            }
+            Log.d("PhoneCallReceiver", "Sound playback started")
+        }, 500) 
+        
+        } catch (e: Exception) {
+            Log.e("PhoneCallReceiver", "Error during sound playback", e)
         }
     }
 }
