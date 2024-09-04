@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.media.AudioAttributes
 import android.util.Log
+import android.os.Handler
 
 object GachaUtil {
 
@@ -22,13 +23,15 @@ object GachaUtil {
             )
 
             mediaPlayer.prepare()
-            mediaPlayer.start()
 
-            mediaPlayer.setOnCompletionListener {
-                Log.d("SoundUtils", "Sound playback completed")
-                it.release()
-            }
-            Log.d("SoundUtils", "Sound playback started")
+            Handler().postDelayed({
+             mediaPlayer.start()
+             mediaPlayer.setOnCompletionListener {
+                 Log.d("PhoneCallReceiver", "Sound playback completed")
+                 it.release()
+             }
+             Log.d("PhoneCallReceiver", "Sound playback started")
+         }, 200) 
 
         } catch (e: Exception) {
             Log.e("SoundUtils", "Error during sound playback", e)

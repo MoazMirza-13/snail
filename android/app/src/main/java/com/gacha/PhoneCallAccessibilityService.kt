@@ -73,6 +73,8 @@ class PhoneCallAccessibilityService : AccessibilityService() {
                 if (callDurationNode != null) {
                     Log.d("PhoneCallAccessibilityService", "Outgoing call has been answered")
                     // Add logic for when the outgoing call is answered
+                    playOffhookSound(this)
+
                     isOutgoingActive = false
                 }
             } else {
@@ -132,6 +134,10 @@ class PhoneCallAccessibilityService : AccessibilityService() {
             if (result != null) return result
         }
         return null
+    }
+
+    private fun playOffhookSound(context: Context) {
+        GachaUtil.playOffhookSound(context)
     }
 
     override fun onInterrupt() {
