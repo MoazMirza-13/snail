@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.media.AudioAttributes
 import android.util.Log
 import android.os.Handler
+import android.media.AudioManager
 
 object GachaUtil {
 
@@ -22,6 +23,7 @@ object GachaUtil {
                     .build()
             )
 
+            mediaPlayer.setVolume(0.7f, 0.7f)
             mediaPlayer.prepare()
 
             Handler().postDelayed({
@@ -37,4 +39,28 @@ object GachaUtil {
             Log.e("SoundUtils", "Error during sound playback", e)
         }
     }
+
+    fun playSound(context: Context) {
+        val mediaPlayer = MediaPlayer()
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
+        mediaPlayer.setDataSource(context, android.net.Uri.parse("android.resource://" + context.packageName + "/" + R.raw.gacha))
+
+        mediaPlayer.setOnPreparedListener {
+            it.setVolume(0.7f, 0.7f)
+            it.start() // Only start when media player is ready
+        }
+
+        mediaPlayer.setOnCompletionListener {
+            it.release()
+        }
+
+        mediaPlayer.setOnErrorListener { mp, what, extra ->
+            Log.e("PhoneCallReceiver", "Error occurred while playing sound: $what, $extra")
+            mp.release()
+            true
+        }
+
+        mediaPlayer.prepareAsync() 
+    }
+
 }
