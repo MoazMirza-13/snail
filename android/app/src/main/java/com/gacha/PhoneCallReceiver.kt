@@ -33,10 +33,10 @@ class PhoneCallReceiver : BroadcastReceiver() {
                 Log.d("PhoneCallReceiver", "in offhook block")
                 if (sharedPreferences.getBoolean("isIncoming", false)) {
                     Log.d("PhoneCallReceiver", "in offhook block. this is an incoming call")
-                    
-                    playOffhookSound(context)
                 } else {
                     Log.d("PhoneCallReceiver", "in offhook block. this is an outgoing call in dialing pahse")
+
+                    // to detect answered call state
                     val enableOutgoingAccessibilityIntent = Intent("com.gacha.ACTION_ENABLE_OUTGOING_ACCESSIBILITY")
                 context.sendBroadcast(enableOutgoingAccessibilityIntent)
                 }
@@ -65,10 +65,6 @@ class PhoneCallReceiver : BroadcastReceiver() {
             mediaPlayer.release() 
         }
         mediaPlayer.start()
-    }  
-
-    private fun playOffhookSound(context: Context) {
-        GachaUtil.playOffhookSound(context)
     }
 
 }

@@ -50,8 +50,6 @@ class PhoneCallAccessibilityService : AccessibilityService() {
         }
     }
 
-    // currently if user open the incoming call scrren (UI) then there will be a delay in toggling on the speakerphone btn
-
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         Log.d("PhoneCallAccessibilityService", "in service")
 
@@ -72,8 +70,6 @@ class PhoneCallAccessibilityService : AccessibilityService() {
                 val callDurationNode = findNodeByContentDescription(rootNode, "0 seconds")
                 if (callDurationNode != null) {
                     Log.d("PhoneCallAccessibilityService", "Outgoing call has been answered")
-                    // Add logic for when the outgoing call is answered
-                    playOffhookSound(this)
 
                     isOutgoingActive = false
                 }
@@ -102,14 +98,16 @@ class PhoneCallAccessibilityService : AccessibilityService() {
                 speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 Log.d("PhoneCallAccessibilityService", "Speakerphone toggled")
 
-            // Toggle off the speakerphone
+                playOffhookSound(this)
+
+            // Toggle off the speakerphone after delay
             Handler(Looper.getMainLooper()).postDelayed({
                 if (speakerButton.isEnabled) {
                     speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                     Log.d("PhoneCallAccessibilityService", "Speakerphone toggled off")
                 }
                
-            }, 1700)
+            }, 900)
                 
                 true
             } else {
