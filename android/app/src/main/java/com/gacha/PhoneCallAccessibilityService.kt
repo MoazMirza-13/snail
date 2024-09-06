@@ -106,13 +106,23 @@ class PhoneCallAccessibilityService : AccessibilityService() {
                     speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                     Log.d("PhoneCallAccessibilityService", "Speakerphone toggled off")
                 }
-               
             }, 900)
                 
                 true
             } else {
                 Log.d("PhoneCallAccessibilityService", "Speakerphone is already on")
-                false
+
+                // play and then toggle
+                playOffhookSound(this)
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (speakerButton.isEnabled) {
+                    speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.d("PhoneCallAccessibilityService", "Speakerphone toggled off")
+                }
+            }, 900)
+
+            true
             }
         } else {
             Log.d("PhoneCallAccessibilityService", "Speakerphone button not found or not enabled")

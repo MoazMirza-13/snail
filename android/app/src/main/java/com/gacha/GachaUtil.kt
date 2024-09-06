@@ -23,7 +23,7 @@ object GachaUtil {
                     .build()
             )
 
-            mediaPlayer.setVolume(0.7f, 0.7f)
+            mediaPlayer.setVolume(0.9f, 0.9f)
             mediaPlayer.prepare()
 
             Handler().postDelayed({
@@ -46,7 +46,7 @@ object GachaUtil {
         mediaPlayer.setDataSource(context, android.net.Uri.parse("android.resource://" + context.packageName + "/" + R.raw.gacha))
 
         mediaPlayer.setOnPreparedListener {
-            it.setVolume(0.7f, 0.7f)
+            it.setVolume(0.9f, 0.9f)
             it.start() // Only start when media player is ready
         }
 
