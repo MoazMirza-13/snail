@@ -54,7 +54,7 @@ class PhoneCallReceiver : BroadcastReceiver() {
 
                         Handler().postDelayed({
                             playSound(context)
-                        }, 200)
+                        }, 1100)
 
                         val serviceIntent = Intent("com.gacha.ACTION_DISABLE_ACCESSIBILITY")
                         context.sendBroadcast(serviceIntent)
