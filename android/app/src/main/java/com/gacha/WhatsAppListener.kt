@@ -1,11 +1,14 @@
-
 package com.gacha
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import android.content.Context
+import android.os.Handler
 
 class WhatsAppListener : NotificationListenerService() {
+
+    private var isIncomingCallDetected = false
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         if (sbn != null && sbn.packageName == "com.whatsapp") {
@@ -19,14 +22,28 @@ class WhatsAppListener : NotificationListenerService() {
             Log.d("WhatsAppNotification", "Notification Posted: Title: $title, Text: $text")
 
             // Check if this notification indicates an incoming call
-            if (title != null && text.contains("Incoming")) {
-                Log.d("WhatsAppNotification", "Incoming WhatsApp Call detected")
+            if (title != null && text != null && text.contains("Incoming")) {
+                Log.d("WhatsAppNotification", "Incoming true")
+                isIncomingCallDetected = true
             }
         }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        // Handle notification removal if needed
-        Log.d("WhatsAppNotification", "Notification Removed")
+        if (sbn != null && sbn.packageName == "com.whatsapp") {
+            // for rejected calls
+            if (isIncomingCallDetected) {
+                Log.d("WhatsAppNotification", "rejected if")
+
+                Handler().postDelayed({
+                    playSound()
+                }, 300)
+                isIncomingCallDetected = false 
+            }
+        }
+    }
+
+    private fun playSound() {
+        GachaUtil.playSound(this)
     }
 }
