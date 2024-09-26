@@ -55,8 +55,8 @@ class PhoneCallAccessibilityService : AccessibilityService() {
 
         if (!isServiceActive || isSpeakerToggled) return 
 
-        if (event.packageName == "com.google.android.dialer") {
-            Log.d("PhoneCallAccessibilityService", "Window state changed in dialer app")
+        if (event.packageName == "com.google.android.dialer" || event.packageName == "com.whatsapp") {
+            Log.d("PhoneCallAccessibilityService", "Window state changed in dialer | whatsapp app")
 
             val rootNode = rootInActiveWindow
             if (rootNode == null) {
@@ -86,8 +86,16 @@ class PhoneCallAccessibilityService : AccessibilityService() {
 
     private fun toggleSpeakerphone(rootNode: AccessibilityNodeInfo?): Boolean {
         if (rootNode == null) return false
+        
+        val packageName = rootInActiveWindow?.packageName.toString()
+        val speakerButton: AccessibilityNodeInfo?
     
-        val speakerButton = findNodeByContentDescription(rootNode, "Speaker")
+        // Determine the correct content description based on the package name
+        speakerButton = when (packageName) {
+            "com.google.android.dialer" -> findNodeByContentDescription(rootNode, "Speaker")
+            "com.whatsapp" -> findNodeByContentDescription(rootNode, "Turn speaker phone on")
+            else -> null
+        }
     
         return if (speakerButton != null && speakerButton.isEnabled) {
             // Check if the speakerphone is already on
@@ -98,16 +106,32 @@ class PhoneCallAccessibilityService : AccessibilityService() {
                 speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 Log.d("PhoneCallAccessibilityService", "Speakerphone toggled")
 
-                playOffhookSound(this)
+                     // Play sound with delay for WhatsApp
+                     if (packageName == "com.whatsapp") {
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            playOffhookSound(this)
+                        }, 700) 
+                    } else {
+                        playOffhookSound(this)
+                    }
+        
+                    // Toggle off the speakerphone after delay
+ if (packageName == "com.whatsapp") {
+  Handler(Looper.getMainLooper()).postDelayed({
+    if (speakerButton.isEnabled) {
+        speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        Log.d("PhoneCallAccessibilityService", "Speakerphone toggled off")
+    }
+}, 1400)
+} else {
+      Handler(Looper.getMainLooper()).postDelayed({
+        if (speakerButton.isEnabled) {
+            speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.d("PhoneCallAccessibilityService", "Speakerphone toggled off")
+        }
+    }, 900)
+}
 
-            // Toggle off the speakerphone after delay
-            Handler(Looper.getMainLooper()).postDelayed({
-                if (speakerButton.isEnabled) {
-                    speakerButton.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                    Log.d("PhoneCallAccessibilityService", "Speakerphone toggled off")
-                }
-            }, 900)
-                
                 true
             } else {
                 Log.d("PhoneCallAccessibilityService", "Speakerphone is already on")
